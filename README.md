@@ -1,6 +1,12 @@
-# ![eduMEET](/images/logo.edumeet.svg) in Docker container
+# Zed Live Docker
 
-This is "dockerized" version of the [eduMEET](https://github.com/edumeet/edumeet). 
+This is the Docker stack for **Zed Live**, a self-hosted video conferencing product built on top of [eduMEET](https://github.com/edumeet).
+
+This repository is a fork of [`edumeet/edumeet-docker`](https://github.com/edumeet/edumeet-docker). Keep `upstream` pointed at eduMEET so we can pull deployment, Docker, and security updates while maintaining Zed Live-specific configuration here.
+
+The main Zed Live deployment/config repo is [`zed-live`](https://github.com/AymenBouchali/zed-live), and the customized frontend lives in [`zed-live-client`](https://github.com/AymenBouchali/zed-live-client).
+
+This is the dockerized version of the [eduMEET](https://github.com/edumeet/edumeet) stack.
 (Successor of [multiparty meeting](https://github.com/havfo/multiparty-meeting) fork of mediasoup-demo)
 
 Docker hub repository: [edumeet](https://hub.docker.com/u/edumeet)
@@ -41,7 +47,7 @@ Releases are docker images with the 'stable' tag ending:
 || public IP address (without any NAT) |
 || 2 FQDN name assigned (for certificates) |
 
-In edumeet-docker components are linked together via the proxy (nginx) docker image.
+In zed-live-docker, components are linked together via the proxy (nginx) docker image.
 
 By default it is using the docker networking hostnames to connect/link components.
 
@@ -70,8 +76,8 @@ sudo usermod -aG docker $USER
 Download repo:
 
 ```bash
-git clone https://github.com/edumeet/edumeet-docker.git
-cd edumeet-docker
+git clone https://github.com/AymenBouchali/zed-live-docker.git
+cd zed-live-docker
 ```
 
 ## Changelog
@@ -293,9 +299,9 @@ docker compose build --no-cache <component name>
 ```
 
 
-eduMEET development usualy happens in 2 ways:
+Zed Live / eduMEET development usually happens in 2 ways:
 - Running components manualy
-- Running edumeet-docker with components linked into the docker container or passed to the proxy.
+- Running zed-live-docker with components linked into the docker container or passed to the proxy.
 
 *Without valid certs you have to allow localhost/local ip to work without certs in the browser. Once for the website, once more for the socket.io connection (replace wss:// with https:// and accept there as well).
 
