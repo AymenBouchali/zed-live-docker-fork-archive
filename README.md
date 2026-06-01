@@ -1,34 +1,41 @@
 # Zed Live Docker
 
-This is the Docker stack for **Zed Live**, a self-hosted video conferencing product built on top of [eduMEET](https://github.com/edumeet).
+Docker Compose stack for **Zed Live** — deployment, certificates, proxy, and
+service wiring for local development and production.
 
-This repository is a fork of [`edumeet/edumeet-docker`](https://github.com/edumeet/edumeet-docker). Keep `upstream` pointed at eduMEET so we can pull deployment, Docker, and security updates while maintaining Zed Live-specific configuration here.
+| Zed Live repo | Role in this stack |
+| :--- | :--- |
+| [`zed-live`](https://github.com/AymenBouchali/zed-live) | Configs, overrides, dev scripts |
+| [`zed-live-client`](https://github.com/AymenBouchali/zed-live-client) | Custom frontend image |
+| [`zed-live-room-server`](https://github.com/AymenBouchali/zed-live-room-server) | Signaling (fork, customize when needed) |
+| [`zed-live-management-server`](https://github.com/AymenBouchali/zed-live-management-server) | Auth & tenants (fork, customize when needed) |
+| [`zed-live-media-node`](https://github.com/AymenBouchali/zed-live-media-node) | WebRTC media (fork, customize when needed) |
 
-The main Zed Live deployment/config repo is [`zed-live`](https://github.com/AymenBouchali/zed-live), and the customized frontend lives in [`zed-live-client`](https://github.com/AymenBouchali/zed-live-client).
+> **Upstream:** Based on [edumeet-docker](https://github.com/edumeet/edumeet-docker).
+> Keep the `upstream` remote to pull deployment and security updates.
+>
+> **Internal names:** Compose service names, container names, and some config
+> keys still use upstream identifiers (e.g. `edumeet-client`). That is expected
+> until we rename them in our stack fork.
 
-This is the dockerized version of the [eduMEET](https://github.com/edumeet/edumeet) stack.
-(Successor of [multiparty meeting](https://github.com/havfo/multiparty-meeting) fork of mediasoup-demo)
+It will set up a production Zed Live instance with or without authentication, and help you with setting up a development environment.
 
-Docker hub repository: [edumeet](https://hub.docker.com/u/edumeet)
-
-It will setup a production eduMEET instance with or without authentication, and help you with setting up a development environment.
-
-For further (more generic) information take a look at [eduMEET repository](https://github.com/edumeet/edumeet)
+For upstream release notes see the [eduMEET changelog](https://github.com/edumeet/edumeet/blob/main/CHANGELOG.md).
 _________________
 
-- Current stable eduMEET consists of these components:
-  - [edumeet-client](https://github.com/edumeet/edumeet-client/)
-  - [edumeet-room-server](https://github.com/edumeet/edumeet-room-server)
-  - [edumeet-media-node](https://github.com/edumeet/edumeet-media-node)
-  - [edumeet-management-server](https://github.com/edumeet/edumeet-management-server)
+- Stack components (Zed Live repos map to these roles):
+  - **Client** — [`zed-live-client`](https://github.com/AymenBouchali/zed-live-client)
+  - **Room server** — [`zed-live-room-server`](https://github.com/AymenBouchali/zed-live-room-server)
+  - **Media node** — [`zed-live-media-node`](https://github.com/AymenBouchali/zed-live-media-node)
+  - **Management server** — [`zed-live-management-server`](https://github.com/AymenBouchali/zed-live-management-server)
 
-Releases are docker images with the 'stable' tag ending:
-| Component    | Docker images |
+Releases are published as Docker images (upstream registry until we publish our own):
+| Component | Docker images |
 | -------- | ------- |
-| edumeet-client  | ![Docker Image for client (latest)](https://img.shields.io/docker/v/edumeet/edumeet-client)   |
-| edumeet-room-server | ![Docker Image for room-server (latest)](https://img.shields.io/docker/v/edumeet/edumeet-room-server)     |
-| edumeet-media-node    | ![Docker Image for room-server (latest)](https://img.shields.io/docker/v/edumeet/edumeet-media-node)    |
-| edumeet-management-server    | ![Docker Image for room-server (latest)](https://img.shields.io/docker/v/edumeet/edumeet-management-server)    |
+| client | ![Docker Image for client (latest)](https://img.shields.io/docker/v/edumeet/edumeet-client) |
+| room-server | ![Docker Image for room-server (latest)](https://img.shields.io/docker/v/edumeet/edumeet-room-server) |
+| media-node | ![Docker Image for media-node (latest)](https://img.shields.io/docker/v/edumeet/edumeet-media-node) |
+| management-server | ![Docker Image for management-server (latest)](https://img.shields.io/docker/v/edumeet/edumeet-management-server) |
 
 
 # Getting started
@@ -55,7 +62,7 @@ Since some components need the hostname / domain name / IP to function it is inc
 
 It also makes certificate renewal easy since on a single domain setup you only need to change the cert in the certs folder.
 
-eduMEET client is the frontend, room-server is the backend, management-server is the auth backend, media-node is used for everything media related.
+The **client** is the frontend, **room-server** is the backend, **management-server** handles auth, and **media-node** routes WebRTC media.
 
  # ![General Architecture](/images/edumeet_general_component_functions.png)
 
@@ -81,17 +88,17 @@ cd zed-live-docker
 ```
 
 ## Changelog
-For latest changes and releases see: 
+For upstream release history see:
 https://github.com/edumeet/edumeet/blob/main/CHANGELOG.md
 
 ## Firewall ports and recommendations
 | Port | protocol | description | network | path | firewall advice | 
 | ---- | ----------- | ----------- | ----------- | ----------- |--------------|
-|  80 | tcp | edumeet-client webserver (redirect to 443) | host network | / | |
-|  443 | tcp | edumeet-client https webserver and signaling proxy | host network |  / | |
-|  3000 |  | edumeet-media-node port | host network | - | should be limited so only the room-server can access it |
+|  80 | tcp | client webserver (redirect to 443) | host network | / | |
+|  443 | tcp | client HTTPS webserver and signaling proxy | host network |  / | |
+|  3000 |  | media-node port | host network | - | should be limited so only the room-server can access it |
 |  3479 |  | coturn port | host network | - | |
-|  40000-40249 | tcp/udp | edumeet-media-node ports | host network | - | |
+|  40000-40249 | tcp/udp | media-node ports | host network | - | |
 
  # ![Network](/images/edumeet_netw.png)
 
@@ -153,8 +160,8 @@ For federated login with discovery we reccommend using SATOSA.
 configuration according to https://github.com/edumeet/edumeet-management-server/wiki/Keycloak-setup-(OAuth-openid-connect)
 
 At this step you can create a test user for example:
-- Username: edumeet
-- Password: edumeet
+- Username: admin
+- Password: changeme
 
 2. visit https://yourdomain.com/mgmt-admin/ and set up your management server config
    - Create a tenant
@@ -175,7 +182,7 @@ At this step you can create a test user for example:
 
 ## Calendar invites
 
-edumeet can send ICS calendar invites (RFC 5545 / RFC 6047 iTIP) for meetings scheduled in existing rooms. Attendees receive the invite in Gmail/Outlook/Apple Calendar, RSVP natively from their mail client, and the response flows back into edumeet via IMAP. Recurring meetings are supported.
+Zed Live can send ICS calendar invites (RFC 5545 / RFC 6047 iTIP) for meetings scheduled in existing rooms. Attendees receive the invite in Gmail/Outlook/Apple Calendar, RSVP natively from their mail client, and the response flows back into Zed Live via IMAP. Recurring meetings are supported.
 
 ### Prerequisites
 
@@ -222,9 +229,9 @@ Invite workers boot automatically for that tenant — no restart needed.
 
 ### IMAP is optional
 
-If IMAP is left blank, invites still work: attendees receive the ICS and can RSVP from their calendar client. The only thing missing is per-attendee RSVP status surfaced in the edumeet admin UI. Within the same provider (Google↔Google, Outlook↔Outlook) attendees still see each other's status natively. Tenants on Gmail/M365 that can't provide basic-auth IMAP can skip it.
+If IMAP is left blank, invites still work: attendees receive the ICS and can RSVP from their calendar client. The only thing missing is per-attendee RSVP status surfaced in the Zed Live admin UI. Within the same provider (Google↔Google, Outlook↔Outlook) attendees still see each other's status natively. Tenants on Gmail/M365 that can't provide basic-auth IMAP can skip it.
 
-> **RSVPs from Thunderbird + Google Calendar are unreliable.** When Thunderbird's calendar event comes from a Google Calendar (via CalDAV / Provider for Google), accepting or declining the invite in Thunderbird writes the new response to Google via CalDAV but does **not** send an iMIP REPLY email. Because Google is not the meeting organizer in this setup, Google will not proxy an RSVP email either. The change is invisible to edumeet and the attendee stays as NEEDS-ACTION in the admin UI. For a reliable RSVP, respond on [calendar.google.com](https://calendar.google.com) directly — that path does send an iMIP REPLY.
+> **RSVPs from Thunderbird + Google Calendar are unreliable.** When Thunderbird's calendar event comes from a Google Calendar (via CalDAV / Provider for Google), accepting or declining the invite in Thunderbird writes the new response to Google via CalDAV but does **not** send an iMIP REPLY email. Because Google is not the meeting organizer in this setup, Google will not proxy an RSVP email either. The change is invisible to Zed Live and the attendee stays as NEEDS-ACTION in the admin UI. For a reliable RSVP, respond on [calendar.google.com](https://calendar.google.com) directly — that path does send an iMIP REPLY.
 
 ### Landing page
 
@@ -299,7 +306,7 @@ docker compose build --no-cache <component name>
 ```
 
 
-Zed Live / eduMEET development usually happens in 2 ways:
+Zed Live development usually happens in 2 ways:
 - Running components manualy
 - Running zed-live-docker with components linked into the docker container or passed to the proxy.
 
